@@ -58,5 +58,5 @@ INQUIRY_USER_DATA = {
 
 ENROLLMENT_DATA_API_PARAMS = {
     "projectId": "1",
-    "semesterId": "384",
+    "semesterId": "114514",
 }

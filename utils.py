@@ -23,7 +23,7 @@ async def ensure_session_active(session, user_config):
         steps = [
             f"{base}.action",
             f"{base}!defaultPage.action?electionProfile.id={pid}",
-            f"{base}!data.action?profileId={pid}",
+            # f"{base}!data.action?profileId={pid}",
         ]
 
         for i, url in enumerate(steps, 1):
