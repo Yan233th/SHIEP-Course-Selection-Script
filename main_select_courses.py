@@ -107,6 +107,13 @@ async def run_loop_for_single_user(user_config: dict):
             print(f"Warning (User {user_label}): USE_PROXY is True, but 'all' proxy key missing. No proxy.")
 
     async with aiohttp.ClientSession(connector=connector) as session:
+        # !important
+        is_active = await ensure_session_active(session, user_config)
+        if not is_active:
+            print(f"\n[!] User {user_label}: Session activation failed (Entry/DefaultPage/Data Error).")
+            print("    Skipping all tasks for this user to avoid illegal parameter errors.\n")
+            return
+
         task_queue = deque()
         task_data_map = {}
 

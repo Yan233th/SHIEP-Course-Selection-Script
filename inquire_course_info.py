@@ -222,7 +222,11 @@ async def inquire_course_info():
 
     async with aiohttp.ClientSession(connector=connector) as session:
         # !important
-        await ensure_session_active(session, INQUIRY_USER_DATA)
+        is_active = await ensure_session_active(session, INQUIRY_USER_DATA)
+        if not is_active:
+            print("\n[!] Error: Failed to activate Inquiry Session.")
+            print("    Please check if INQUIRY_USER_DATA cookies are valid and network is connected.\n")
+            return
 
         inquiry_cookies = INQUIRY_USER_DATA.get("cookies")
 
