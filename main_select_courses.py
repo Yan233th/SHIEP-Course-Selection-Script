@@ -10,10 +10,10 @@ try:
 except ImportError:
     ProxyConnector = None
 
-from utils import ensure_session_active
-
 from config import url, headers, data as base_data_payload, failed_words, error_words
 from custom import USE_PROXY, proxies, USER_CONFIGS
+
+from utils import ensure_session_active
 
 warnings.simplefilter("ignore", InsecureRequestWarning)
 
@@ -88,11 +88,11 @@ async def attempt_single_course_selection(
     return "error"
 
 
-async def run_loop_for_single_user(
-    user_label: str,
-    user_cookies: dict,
-    user_tables: list[dict],
-):
+async def run_loop_for_single_user(user_config: dict):
+    user_label = user_config.get("label", "Unknown_User")
+    user_cookies = user_config.get("cookies")
+    user_tables = user_config.get("tables")
+
     connector = None
     if USE_PROXY:
         if ProxyConnector and "all" in proxies:
@@ -180,7 +180,7 @@ async def main_select_courses(endless=False):
     if not USER_CONFIGS:
         print("No user configurations found in custom.py. Exiting course selection.")
         return
-    
+
     global ENDLESS
     ENDLESS = endless
 
@@ -188,20 +188,13 @@ async def main_select_courses(endless=False):
     print("Preparing course selection tasks for all users...")
 
     for peer_config in USER_CONFIGS:
-        user_label = peer_config.get("label", "Unknown_User")
-        user_cookies = peer_config.get("cookies")
-        user_tables = peer_config.get("tables")
-
-        if not user_cookies:
-            print(f"Cannot get user {user_label}'s cookies. Skip...")
+        if not peer_config.get("cookies") or not peer_config.get("tables"):
+            label = peer_config.get("label", "Unknown")
+            print(f"Skipping {label}: Missing cookies or tables")
             continue
 
         peer_selection_tasks.append(
-            run_loop_for_single_user(
-                user_label=user_label,
-                user_cookies=user_cookies,
-                user_tables=user_tables,
-            )
+            run_loop_for_single_user(peer_config),
         )
 
     print(f"\nStarting selection for {len(peer_selection_tasks)} user(s)...\n")
