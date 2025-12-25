@@ -16,6 +16,8 @@ except ImportError:
 from config import headers
 from custom import USE_PROXY, proxies, INQUIRY_USER_DATA, ENROLLMENT_DATA_API_PARAMS
 
+from utils import ensure_session_active
+
 warnings.simplefilter("ignore", InsecureRequestWarning)
 
 
@@ -219,6 +221,10 @@ async def inquire_course_info():
             print("Warning (Inquiry): USE_PROXY is True, 'all' proxy key missing. No proxy.")
 
     async with aiohttp.ClientSession(connector=connector) as session:
+
+        # !important
+        await ensure_session_active(session, INQUIRY_USER_DATA)
+
         inquiry_cookies = INQUIRY_USER_DATA.get("cookies")
 
         if not inquiry_cookies:

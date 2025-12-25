@@ -10,6 +10,8 @@ try:
 except ImportError:
     ProxyConnector = None
 
+from utils import ensure_session_active
+
 from config import url, headers, data as base_data_payload, failed_words, error_words
 from custom import USE_PROXY, proxies, USER_CONFIGS
 
