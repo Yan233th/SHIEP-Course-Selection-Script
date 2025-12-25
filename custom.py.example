@@ -1,7 +1,7 @@
 USE_PROXY = False  # Set to True to enable proxies globally
 
 proxies = {
-    "all": "socks5://127.0.0.1:10114",
+    "all": "socks5://127.0.0.1:114514",
 }
 
 USER_CONFIGS = [

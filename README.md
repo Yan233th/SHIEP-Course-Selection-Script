@@ -1,156 +1,62 @@
-# SHIEP Course Selection Script
+# Course Selection Engine
 
-This is a script for automating the SHIEP course registration system, supporting asynchronous HTTP requests, making it convenient for batch course selection, course inquiry, cookie validation, and other operations. It is suitable for students who need to quickly select or query course information.
+This tool provides a command-line interface for batch course registration, inquiry, and session management. It utilizes asynchronous I/O to handle multiple accounts and requests simultaneously.
 
-## Features
+## Technical Context
+The system requires specific session activation sequences to prevent server-side errors. For a detailed technical analysis of the underlying access logic, refer to: [about_access_permissions.md](about_access_permissions.md).
 
-- **Automatic Course Selection**: Batch register courses for multiple users.
-- **Course Inquiry**: Query course information by keyword (e.g., course name) or condition (e.g., `teacher=Smith`).
-- **Cookie Validation**: Check the validity of cookies in user configurations.
-- **Course Availability Check**: Verify if specified courses are available for registration.
+## Installation
 
-## Installation and Configuration
+This project requires Python 3.10+ and uses `uv` for dependency management.
 
-### 1. Install Dependencies
+1. Install the environment and dependencies:
+   ```bash
+   uv sync
+   ```
 
-- Ensure ***Python 3.10+*** is installed.
-- Run the following command to install required libraries:
-  ```bash
-  pip install -r requirements.txt
-  ```
+## Configuration
 
-### 2. Configure `custom.py`
+### 1. Initialize custom.py
+Copy the template file to create your local configuration:
+```bash
+cp custom.py.example custom.py
+```
 
-- **Prepare the File**:
-  - Copy `custom.py.example` to `custom.py` (e.g., `cp custom.py.example custom.py`).
-  - Edit `custom.py` to add user information, course configurations, and inquiry user data.
-- **Configuration Format**: Organized by user, each user has one configuration object containing `label` (user identifier), `tables` (profile and course information), and `cookies` (login credentials). Example:
-  ```python
-  USER_CONFIGS = [
-      {
-          "label": "User_Alice",  # User label for identification
-          "tables": [
-              {
-                  "profileId": "114514",  # Personal profile ID
-                  "course_ids": [
-                      "COURSEID_A1",  # Course ID
-                      "COURSEID_A2",
-                  ],
-              },
-              {
-                  "profileId": "1919810",
-                  "course_ids": [
-                      "COURSEID_B1",
-                      "COURSEID_B2",
-                  ],
-              },
-          ],
-          "cookies": {
-              "JSESSIONID": "ALICE_SESSION_ID_HERE",  # Login session ID
-              "SERVERNAME": "c1",  # Server name
-          },
-      },
-      {
-          "label": "User_Bob",
-          "tables": [
-              {
-                  "profileId": "233",
-                  "course_ids": [
-                      "COURSEID_C1",
-                      "COURSEID_C2",
-                  ],
-              },
-          ],
-          "cookies": {
-              "JSESSIONID": "BOB_SESSION_ID_HERE",
-              "SERVERNAME": "c2",
-          },
-      },
-      # ... other user configs for selection ...
-  ]
-  ```
-- **Inquiry User Configuration**: Configure a separate `INQUIRY_USER_DATA` for the course inquiry function. Example:
-  ```python
-  INQUIRY_USER_DATA = {
-      "label": "DefaultInquiryUser",
-      "profileId": "114514",
-      "cookies": {
-          "JSESSIONID": "YOUR_INQUIRY_JSESSIONID_HERE",
-          "SERVERNAME": "YOUR_INQUIRY_SERVERNAME_HERE",
-      },
-  }
-  ```
-- **How to Obtain Cookies**:
-  - Open the browser, press F12 to enter developer tools, and follow these steps:
-    1. **Preferred**: Switch to the “Application” tab, find “Storage” -> “Cookies” on the left, click `https://jw.shiep.edu.cn`, locate `JSESSIONID` and `SERVERNAME`, and copy their values.
-    2. **Alternative**: Switch to the “Network” tab, log into the course registration system, check requests (e.g., login or homepage requests), and find `JSESSIONID` and `SERVERNAME` in the `Cookie` header.
-  - Alternatively, use [curlconverter](https://curlconverter.com/) to convert cURL requests to obtain cookies.
-- **How to Obtain Course IDs**:
-  - Use the script’s “course inquiry” function (run `python main.py --inquire`).
-  - Alternatively, visit the course system URL: `https://jw.shiep.edu.cn/eams/stdElectCourse!data.action?profileId=<your_profile_id>` to view the returned course data.
-- **How to Obtain `profileId`**:
-  - Retrieve it from the above URL or the personal page in the course system, ensuring it matches the cookies.
-- **Proxy Settings**:
-  - If using the **official EasyConnect VPN** to connect to the campus network, no proxy is needed. Set:
-    ```python
-    USE_PROXY = False
-    ```
-  - If using a **third-party VPN** (e.g., EasierConnect), set `USE_PROXY = True` and configure the proxy address, for example:
-    ```python
-    USE_PROXY = True
-    proxies = {
-        "all": "socks5://127.0.0.1:10114",  # Replace with your proxy address and port
-    }
-    ```
-  - Third-party VPNs require `aiohttp-socks` (included in `requirements.txt`).
-- **API Parameters**: Configure semester and project parameters. Example:
-  ```python
-  ENROLLMENT_DATA_API_PARAMS = {
-      "projectId": "1",
-      "semesterId": "384",
-  }
-  ```
-  - Ensure `projectId` and `semesterId` match the current semester, obtainable from course system requests.
+### 2. User Credentials and Tables
+Edit `custom.py` to fill the `USER_CONFIGS` and `INQUIRY_USER_DATA` sections.
+- **JSESSIONID & SERVERNAME**: Obtain these from the browser developer tools (F12). Navigate to Application -> Storage -> Cookies.
+- **profileId**: The internal identifier for the course selection round, found in the network requests of the course system or via the `--inquire` command.
+- **course_ids**: The unique identifiers for specific courses.
 
-### 3. Run the Script
+### 3. Proxy and Network Environments
+Configuration of the `USE_PROXY` setting depends on your connection method:
+- **Official VPN (EasyConnect) or Campus Network**: These environments usually provide a direct route to the server, requiring `USE_PROXY` to be set to `False`.
+- **Third-party VPNs (e.g., EasierConnect)**: These environments often require a SOCKS5 proxy to route traffic. Set `USE_PROXY` to `True` and specify the proxy server address and port within the `proxies` dictionary in `custom.py`.
 
-- Run in the terminal:
-  ```bash
-  python main.py <command>
-  ```
-- Available commands:
-  - `--start`: Automatically select courses for all users in `USER_CONFIGS`.
-  - `--inquire`: Query course information, supporting searches by keyword (e.g., course name) or condition (e.g., `teacher=Smith`). Enter `q` to exit.
-  - `--validate`: Batch validate the cookies in `USER_CONFIGS`.
-  - `--check`: Check if specified courses are available for registration.
-- Examples:
-  ```bash
-  python main.py --start  # Start course selection
-  python main.py --inquire  # Query courses
-  ```
+### 4. API Parameters
+Ensure `ENROLLMENT_DATA_API_PARAMS` (containing `projectId` and `semesterId`) matches the current academic term. These values can be extracted from the network traffic when manually loading course counts.
 
-### 4. Stop the Script
+## Usage
 
-- Press `Ctrl+C` to interrupt the script at any time. The program will display “Program interrupted by user” and exit safely.
+Commands are executed via `uv run main.py <command>`.
 
-## Notes
+### Available Commands
+- `--start` : Execute registration for all users defined in `USER_CONFIGS`.
+  - `--endless`: Optional flag to retry indefinitely until successful. Used for sniping courses as they become available.
+- `--inquire`: Interactive mode to search for courses. Supports keywords or field-specific queries (e.g., `teacher=Smith`).
+- `--validate`: Batch verification of cookie validity for all accounts.
+- `--check`: Real-time verification of course capacity and current enrollment status.
+- `--help`: Display the command help menu.
 
-- **Cookie Validity**: Ensure `JSESSIONID` and `SERVERNAME` are valid. Expired or incorrect cookies will cause course selection to fail.
-- **Proxy Settings**: No proxy is needed with EasyConnect; third-party VPNs require correct proxy address and port configuration.
-- **Course ID Accuracy**: Verify `course_ids` and `profileId` before selecting courses to avoid errors.
-- **SSL Verification**: The script disables SSL verification by default. Ensure the course system server is trusted.
-- **Debugging**: Run `--validate` or `--check` to verify configuration correctness.
+## Characteristics
 
-## Common Issues
+- **Asynchronous Concurrency**: Built with `asyncio` and `aiohttp` to manage concurrent tasks efficiently.
+- **Session Activation**: Automated pre-access routine to satisfy server-side state requirements.
+- **Interleaved Scheduling**: Task queuing logic that interleaves course requests to distribute traffic across different profile contexts.
+- **Data Sanitization**: Built-in recovery for non-standard JSON responses from legacy endpoints.
 
-- **What if cookies expire?**  
-  Log into the course system again, obtain new `JSESSIONID` and `SERVERNAME`, and update `custom.py`.
-- **Can’t find course IDs?**  
-  Use the `--inquire` function to query courses or check the course system data interface.
-- **Proxy connection failed?**
-  - Confirm whether you’re using EasyConnect (no proxy needed) or a third-party VPN (proxy required).
-  - Check the proxy address and port, or set `USE_PROXY = False` to disable the proxy.
-
-## Contribution
-
-We welcome issues or pull requests to improve the script! For any questions, please provide feedback in the GitHub repository.
+## Maintenance and Safety
+- **SSL**: Verification is disabled by default to accommodate internal network certificate issues.
+- **Termination**: Use `Ctrl+C` to stop the process safely.
+- **Cookie Expiry**: If the system returns 302 redirects to a login page, update the `cookies` in `custom.py` with fresh values.
+- 
