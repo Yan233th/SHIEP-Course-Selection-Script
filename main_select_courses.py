@@ -41,7 +41,7 @@ async def attempt_single_course_selection(
         "cookies": user_cookies,
         "params": user_params,
         "data": current_data_payload,
-        "timeout": 1,
+        "timeout": 1.5,
         "ssl": False,  # disables SSL cert verification
         "allow_redirects": False,
     }
