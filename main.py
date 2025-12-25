@@ -14,9 +14,11 @@ def display_help():
     print("Usage: python main.py <command>")
     print("Commands:")
     print("  --start    : Select courses for all users")
+    print("               [--endless] Retry indefinitely until successful")
     print("  --inquire  : Inquire course info")
     print("  --validate : Batch validate cookie validity")
     print("  --check    : Verify course availability")
+    print("  --help     : Show this help message and exit")
 
 
 async def main():
@@ -39,6 +41,8 @@ async def main():
             await verify_cookie_validity()
         case "--check":
             await check_course()
+        case "--help" | "-h":
+            display_help()
         case _:
             print("Error: Unknown command.")
             display_help()
