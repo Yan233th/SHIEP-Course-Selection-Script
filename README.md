@@ -59,4 +59,4 @@ Commands are executed via `uv run main.py <command>`.
 - **SSL**: Verification is disabled by default to accommodate internal network certificate issues.
 - **Termination**: Use `Ctrl+C` to stop the process safely.
 - **Cookie Expiry**: If the system returns 302 redirects to a login page, update the `cookies` in `custom.py` with fresh values.
-- 
+ 
