@@ -65,7 +65,7 @@ async def attempt_single_course_selection(
                     return "failed"
                 elif "当前选课不开放" in response_text:
                     print(f"User {user_label} ({profileId}) - Course ID {course_id}: Failed (error: 操作失败:当前选课不开放).\n")
-                elif "请不要过快点击" in response_text:
+                elif "过快" in response_text:
                     print(f"User {user_label} ({profileId}) - Course ID {course_id}: Failed (error: 请不要过快点击).\n")
                 elif any(word in response_text for word in error_words):
                     print(f"User {user_label} ({profileId}) - Course ID {course_id}: Failed (error: {response_text.strip()}).\n")
