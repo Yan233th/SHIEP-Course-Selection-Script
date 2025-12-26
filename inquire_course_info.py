@@ -251,6 +251,9 @@ async def inquire_course_info():
                 continue
             all_courses.extend(courses)
 
+            if len(profile_ids) > 1:
+                await asyncio.sleep(0.2)
+
         if not all_courses:
             print("Could not fetch any course data. Exiting inquiry.")
             return
