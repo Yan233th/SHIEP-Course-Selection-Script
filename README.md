@@ -10,9 +10,9 @@ The system requires specific session activation sequences to prevent server-side
 This project requires Python 3.10+ and uses `uv` for dependency management.
 
 1. Install the environment and dependencies:
-   ```bash
-   uv sync
-   ```
+```bash
+uv sync
+```
 
 ## Configuration Guide
 
@@ -36,6 +36,7 @@ The `profileId` is a prerequisite for both inquiry and selection.
 With valid cookies and a `profileId`, use the inquiry tool to retrieve specific course details.
 - **Command**: `uv run main.py --inquire`
 - **Function**: This command retrieves course names, teacher information, current enrollment status, and the unique **Course ID**.
+- **Alternative**: Course IDs can also be obtained by inspecting network traffic via browser developer tools (**F12**), though using the `--inquire` function is recommended for efficiency.
 - **Usage**: Copy the **Course ID** from the inquiry results into the `course_ids` list under `USER_CONFIGS` for the registration process.
 
 ### 4. Proxy and Network Environments
