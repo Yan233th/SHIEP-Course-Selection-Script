@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "aiohttp-socks>=0.11.0",
+    "schedule>=1.2.2",
     "tqdm>=4.67.1",
     "urllib3>=2.6.2",
 ]

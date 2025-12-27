@@ -6,7 +6,7 @@ from config import headers
 
 # URLs & Configuration
 BASE = "https://jw.shiep.edu.cn/eams/stdElectCourse"
-PID = INQUIRY_USER_DATA.get("profileId")[0] if isinstance(INQUIRY_USER_DATA.get("profileId"), list) else INQUIRY_USER_DATA.get("profileId")
+PID = val[0] if isinstance(val := INQUIRY_USER_DATA.get("profileId"), list) and val else val
 URLS = {
     "ENTRY": f"{BASE}.action",
     "DEFAULT": f"{BASE}!defaultPage.action?electionProfile.id={PID}",
@@ -24,7 +24,7 @@ async def hit(session, url):
 
 
 async def main():
-    connector = ProxyConnector.from_url(proxies.get("all")) if USE_PROXY and proxies.get("all") else None
+    connector = ProxyConnector.from_url(p) if USE_PROXY and (p := proxies.get("all")) else None
     async with aiohttp.ClientSession(connector=connector) as session:
         print(f"Testing ProfileID: {PID}\n")
 
