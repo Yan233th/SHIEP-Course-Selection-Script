@@ -91,7 +91,7 @@ async def attempt_single_course_selection(
 async def run_loop_for_single_user(user_config: dict):
     user_label = user_config.get("label", "Unknown_User")
     user_cookies = user_config.get("cookies")
-    user_tables = user_config.get("tables")
+    user_tables = user_config.get("tables") or []
 
     connector = None
     if USE_PROXY:

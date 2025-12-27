@@ -45,7 +45,7 @@ async def check_course():
 
     async with aiohttp.ClientSession(connector=connector) as session:
         print("Fetching enrollment data...")
-        enrollments = await get_enrollment_data(session, INQUIRY_USER_DATA.get("cookies"))
+        enrollments = await get_enrollment_data(session, INQUIRY_USER_DATA.get("cookies", {}))
         if not enrollments:
             print("Could not fetch enrollment data. Exiting inquiry.")
             return
