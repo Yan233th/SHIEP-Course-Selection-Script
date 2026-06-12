@@ -19,10 +19,12 @@ async def check(label: str, id: str, enrollments: dict):
     lc = enrollments.get(id, {}).get("lc")
     if sc is None or lc is None:
         return CourseStatus(label, id, False)
-    if sc < lc:
-        return CourseStatus(label, id, True)
-    else:
+    try:
+        # API may return numbers as strings, explicitly convert to int before comparison
+        has_slot = int(sc) < int(lc)
+    except (TypeError, ValueError):
         return CourseStatus(label, id, False)
+    return CourseStatus(label, id, has_slot)
 
 
 async def check_course():
