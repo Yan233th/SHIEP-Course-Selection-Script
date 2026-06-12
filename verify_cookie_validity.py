@@ -3,7 +3,7 @@ import aiohttp
 from tqdm.asyncio import tqdm
 
 from config import headers
-from custom import USER_CONFIGS, INQUIRY_USER_DATA
+from config_loader import USER_CONFIGS, INQUIRY_USER_DATA
 from utils import build_connector
 
 check_url = "https://jw.shiep.edu.cn/eams/stdElectCourse.action"

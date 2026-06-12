@@ -1,7 +1,7 @@
 import asyncio
 import aiohttp
 from aiohttp_socks import ProxyConnector
-from custom import INQUIRY_USER_DATA, USE_PROXY, proxies
+from config_loader import INQUIRY_USER_DATA, USE_PROXY, proxies
 from config import headers
 
 # URLs & Configuration

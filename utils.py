@@ -2,7 +2,7 @@ from asyncio import sleep
 from aiohttp import ClientSession
 
 from config import headers
-from custom import USE_PROXY, proxies
+from config_loader import USE_PROXY, proxies
 
 try:
     from aiohttp_socks import ProxyConnector

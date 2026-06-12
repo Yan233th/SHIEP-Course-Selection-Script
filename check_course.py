@@ -3,7 +3,7 @@ import aiohttp
 from tqdm.asyncio import tqdm
 
 from inquire_course_info import get_enrollment_data
-from custom import USER_CONFIGS, INQUIRY_USER_DATA
+from config_loader import USER_CONFIGS, INQUIRY_USER_DATA
 from utils import build_connector
 
 

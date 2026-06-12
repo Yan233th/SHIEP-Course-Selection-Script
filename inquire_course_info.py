@@ -8,7 +8,7 @@ import warnings
 from urllib3.exceptions import InsecureRequestWarning
 
 from config import headers
-from custom import INQUIRY_USER_DATA, ENROLLMENT_DATA_API_PARAMS
+from config_loader import INQUIRY_USER_DATA, ENROLLMENT_DATA_API_PARAMS
 
 from utils import ensure_session_active, build_connector
 

@@ -6,7 +6,7 @@ from tqdm.asyncio import tqdm
 from urllib3.exceptions import InsecureRequestWarning
 
 from config import url, headers, data as base_data_payload, failed_words, error_words
-from custom import USER_CONFIGS
+from config_loader import USER_CONFIGS
 
 from utils import ensure_session_active, build_connector
 
