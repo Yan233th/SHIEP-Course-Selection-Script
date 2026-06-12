@@ -16,16 +16,16 @@ uv sync
 
 ## Configuration Guide
 
-Configuration is managed via `custom.py`. Copy the template to begin:
+Configuration is managed via `config.toml`. Copy the template to begin:
 ```bash
-cp custom.py.example custom.py
+cp config.toml.example config.toml
 ```
 
 ### 1. Account Cookies
 Required for all operations.
 - **How to obtain**: Open the course system in a browser, press `F12`, and navigate to **Application** -> **Storage** -> **Cookies**.
 - **Values**: Copy the values for `JSESSIONID` and `SERVERNAME`.
-- **Expiry**: If the script returns `302` redirects, your cookies have expired and must be updated in `custom.py`.
+- **Expiry**: If the script returns `302` redirects, your cookies have expired and must be updated in `config.toml`.
 
 ### 2. Identifying the Profile ID
 The `profileId` is a prerequisite for both inquiry and selection.
@@ -42,7 +42,7 @@ With valid cookies and a `profileId`, use the inquiry tool to retrieve specific 
 ### 4. Proxy and Network Environments
 Configuration of the `USE_PROXY` setting depends on your connection method:
 - **Official VPN (EasyConnect) or Campus Network**: These environments usually provide a direct route to the server, requiring `USE_PROXY` to be set to `False`.
-- **Third-party VPNs (e.g., EasierConnect)**: These environments often require a SOCKS5 proxy to route traffic. Set `USE_PROXY` to `True` and specify the proxy server address and port within the `proxies` dictionary in `custom.py`.
+- **Third-party VPNs (e.g., EasierConnect)**: These environments often require a SOCKS5 proxy to route traffic. Set `USE_PROXY` to `True` and specify the proxy server address and port within the `proxies` dictionary in `config.toml`.
 
 ### 5. API Parameters
 Configure `ENROLLMENT_DATA_API_PARAMS` with the correct `projectId` and `semesterId`.
