@@ -13,7 +13,6 @@ from utils import ensure_session_active, build_connector
 warnings.simplefilter("ignore", InsecureRequestWarning)
 
 ENDLESS = False
-failed_courses: list[dict] = []
 
 
 async def attempt_single_course_selection(
@@ -87,6 +86,7 @@ async def run_loop_for_single_user(user_config: dict):
     user_label = user_config.get("label", "Unknown_User")
     user_cookies = user_config.get("cookies")
     user_tables = user_config.get("tables")
+    failed_courses: list[dict] = []
 
     connector = build_connector(f"User {user_label}")
 
@@ -96,7 +96,7 @@ async def run_loop_for_single_user(user_config: dict):
         if not is_active:
             print(f"\n[!] User {user_label}: Session activation failed (Entry/DefaultPage/Data Error).")
             print("    Skipping all tasks for this user to avoid illegal parameter errors.\n")
-            return
+            return failed_courses
 
         task_queue = deque()
         task_data_map = {}
@@ -125,7 +125,7 @@ async def run_loop_for_single_user(user_config: dict):
 
         if not task_queue:
             print(f"No valid tasks found for user: {user_label}. Exiting selection process.")
-            return
+            return failed_courses
 
         print(f"\nStarting selection for {len(task_queue)} course(s) for user {user_label}...\n")
 
@@ -165,6 +165,7 @@ async def run_loop_for_single_user(user_config: dict):
                 break
 
     print(f"User {user_label} - Course selection processes has concluded.")
+    return failed_courses
 
 
 async def main_select_courses(endless=False):
@@ -189,7 +190,10 @@ async def main_select_courses(endless=False):
         )
 
     print(f"\nStarting selection for {len(peer_selection_tasks)} user(s)...\n")
-    await tqdm.gather(*peer_selection_tasks, desc="Total Course Selection Progress")
+    per_user_results = await tqdm.gather(*peer_selection_tasks, desc="Total Course Selection Progress")
+
+    # Aggregate failed course lists from all users (early-exit users return empty list)
+    failed_courses = [failure for user_failures in per_user_results for failure in (user_failures or [])]
 
     print("\nAll course selection tasks have been processed.")
     if failed_courses:
