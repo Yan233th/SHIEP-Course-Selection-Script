@@ -3,7 +3,6 @@ import csv
 import os
 import aiohttp
 import json
-import sys
 import re
 import warnings
 from urllib3.exceptions import InsecureRequestWarning
@@ -123,10 +122,10 @@ def parse_course_json(data_str: str):
             return parsed_data
         except json.JSONDecodeError as e:
             print(f"Parsing still failed after attempting to fix: {e}")
-            sys.exit(1)
+            return None
 
 
-async def get_course_data(session: aiohttp.ClientSession, profile_id: str, inquiry_cookies: dict) -> list:
+async def get_course_data(session: aiohttp.ClientSession, profile_id: str, inquiry_cookies: dict) -> list | None:
     url = f"https://jw.shiep.edu.cn/eams/stdElectCourse!data.action?profileId={profile_id}"
     try:
         async with session.get(
@@ -145,13 +144,13 @@ async def get_course_data(session: aiohttp.ClientSession, profile_id: str, inqui
                 return parse_course_json(json_data_match.group())
             else:
                 print("Failed to retrieve valid JSON course data from response.")
-                sys.exit(1)
+                return None
     except aiohttp.ClientError as e:
         print(f"Failed to retrieve course data due to client error: {e}")
-        sys.exit(1)
+        return None
     except Exception as e:
         print(f"An unexpected error occurred in get_course_data: {e}")
-        sys.exit(1)
+        return None
 
 
 async def get_enrollment_data(session: aiohttp.ClientSession, inquiry_cookies: dict):
@@ -173,13 +172,13 @@ async def get_enrollment_data(session: aiohttp.ClientSession, inquiry_cookies: d
                 return parse_course_json(json_data_match.group())
             else:
                 print("Failed to retrieve valid JSON enrollment data from response.")
-                sys.exit(1)
+                return None
     except aiohttp.ClientError as e:
         print(f"Failed to retrieve enrollment data due to client error: {e}")
-        sys.exit(1)
+        return None
     except Exception as e:
         print(f"An unexpected error occurred in get_enrollment_data: {e}")
-        sys.exit(1)
+        return None
 
 
 def filter_courses(courses: list, keyword: str, enrollments: dict):
