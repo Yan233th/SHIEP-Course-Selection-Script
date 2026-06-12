@@ -17,9 +17,97 @@ warnings.simplefilter("ignore", InsecureRequestWarning)
 
 
 def fix_nonstandard_json(data_str: str) -> str:
-    data_str = re.sub(r"(?<!\\)'", '"', data_str)
-    data_str = re.sub(r"(?<=[{,])\s*([a-zA-Z_]\w*)\s*:", r'"\1":', data_str)
-    return data_str
+    """
+    Normalize JSON-like JS object literals into valid JSON.
+    Scan character by character, distinguishing "inside strings" from "structure":
+      - String contents are preserved verbatim (single quotes unified to double quotes,
+        inner double quotes escaped), so apostrophes, commas, colons in values are not broken;
+      - Only bare identifiers in "key position" get quotes added;
+      - Bare values like true/false/null/numbers are preserved as-is.
+    """
+    out = []
+    i = 0
+    n = len(data_str)
+    stack = []          # Track containing container: '{' or '['
+    expect_key = False  # Whether current position expects an object key
+
+    while i < n:
+        c = data_str[i]
+
+        # String literal: copy verbatim, unify quote style
+        if c == '"' or c == "'":
+            quote = c
+            out.append('"')
+            i += 1
+            while i < n:
+                ch = data_str[i]
+                if ch == "\\" and i + 1 < n:        # Preserve escape sequence
+                    out.append(ch)
+                    out.append(data_str[i + 1])
+                    i += 2
+                    continue
+                if ch == quote:                     # Hit matching closing quote
+                    i += 1
+                    break
+                if ch == '"':                       # Bare double quote inside single-quoted string -> escape
+                    out.append('\\"')
+                    i += 1
+                    continue
+                out.append(ch)
+                i += 1
+            out.append('"')
+            expect_key = False
+            continue
+
+        if c == "{":
+            stack.append("{")
+            out.append(c)
+            expect_key = True
+            i += 1
+            continue
+        if c == "[":
+            stack.append("[")
+            out.append(c)
+            expect_key = False
+            i += 1
+            continue
+        if c == "}" or c == "]":
+            if stack:
+                stack.pop()
+            out.append(c)
+            expect_key = False
+            i += 1
+            continue
+        if c == ",":
+            out.append(c)
+            expect_key = bool(stack) and stack[-1] == "{"
+            i += 1
+            continue
+        if c == ":":
+            out.append(c)
+            expect_key = False
+            i += 1
+            continue
+        if c.isspace():
+            out.append(c)
+            i += 1
+            continue
+
+        # Bare identifier in key position -> add quotes
+        if expect_key and (c.isalpha() or c == "_"):
+            j = i
+            while j < n and (data_str[j].isalnum() or data_str[j] == "_"):
+                j += 1
+            out.append('"' + data_str[i:j] + '"')
+            i = j
+            expect_key = False
+            continue
+
+        # Other bare values (numbers / true / false / null) preserved as-is
+        out.append(c)
+        i += 1
+
+    return "".join(out)
 
 
 def parse_course_json(data_str: str):
