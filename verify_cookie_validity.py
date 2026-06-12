@@ -3,12 +3,8 @@ import aiohttp
 from tqdm.asyncio import tqdm
 
 from config import headers
-from custom import USE_PROXY, proxies, USER_CONFIGS, INQUIRY_USER_DATA
-
-try:
-    from aiohttp_socks import ProxyConnector
-except ImportError:
-    ProxyConnector = None
+from custom import USER_CONFIGS, INQUIRY_USER_DATA
+from utils import build_connector
 
 check_url = "https://jw.shiep.edu.cn/eams/stdElectCourse.action"
 
@@ -20,18 +16,7 @@ class CheckResult:
 
 
 async def check(label: str, cookies: dict) -> CheckResult:
-    connector = None
-    if USE_PROXY:
-        if ProxyConnector and "all" in proxies:
-            proxy_url_val = proxies["all"]
-            if proxy_url_val:
-                connector = ProxyConnector.from_url(proxy_url_val)
-            else:
-                print("Warning (Inquiry): USE_PROXY is True, but proxy URL is empty. No proxy.")
-        elif not ProxyConnector:
-            print("Warning (Inquiry): USE_PROXY is True, aiohttp-socks not installed. No proxy.")
-        else:
-            print("Warning (Inquiry): USE_PROXY is True, 'all' proxy key missing. No proxy.")
+    connector = build_connector(label)
 
     try:
         async with aiohttp.ClientSession(connector=connector) as session:

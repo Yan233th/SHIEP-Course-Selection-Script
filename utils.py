@@ -2,12 +2,39 @@ from asyncio import sleep
 from aiohttp import ClientSession
 
 from config import headers
+from custom import USE_PROXY, proxies
+
+try:
+    from aiohttp_socks import ProxyConnector
+except ImportError:
+    ProxyConnector = None
+
+
+def build_connector(label: str = ""):
+    """
+    Build aiohttp connector based on proxy config.
+    Returns None (no proxy) if USE_PROXY is False, dependencies missing, or config incomplete.
+    """
+    if not USE_PROXY:
+        return None
+
+    tag = f" ({label})" if label else ""
+    if not ProxyConnector:
+        print(f"Warning{tag}: USE_PROXY is True, but aiohttp-socks not installed. No proxy.")
+        return None
+
+    proxy_url = proxies.get("all")
+    if not proxy_url:
+        print(f"Warning{tag}: USE_PROXY is True, but proxy URL is empty/missing. No proxy.")
+        return None
+
+    return ProxyConnector.from_url(proxy_url)
 
 
 async def ensure_session_active(session: ClientSession, user_config: dict):
     """
-    自适应激活 Session 状态。
-    兼容 Selection 用户 (含 tables) 和 Inquiry 用户 (含 profileId 列表)。
+    Adaptively activate session state.
+    Compatible with Selection users (with tables) and Inquiry users (with profileId list).
     """
     label = user_config.get("label", "Unknown")
     cookies = user_config.get("cookies")
@@ -19,8 +46,8 @@ async def ensure_session_active(session: ClientSession, user_config: dict):
         val = user_config["profileId"]
         pids = set(val) if isinstance(val, list) else {val}
 
-    # 按顺序激活 EAMS 会话状态，确保后续请求合法。
-    # 顺序：入口 -> 默认页 -> 数据页
+    # Activate EAMS session state in order to ensure subsequent requests are valid.
+    # Order: Entry -> Default Page -> Data Page
     base = "https://jw.shiep.edu.cn/eams/stdElectCourse"
 
     try:

@@ -15,7 +15,7 @@ URLS = {
 
 
 async def hit(session, url):
-    """单次点击，返回是否受限"""
+    """Single request, returns whether rate-limited"""
     try:
         async with session.get(url, headers=headers, cookies=INQUIRY_USER_DATA["cookies"], ssl=False, timeout=5) as resp:
             return "过快" in await resp.text() or resp.status == 503
@@ -51,7 +51,7 @@ async def main():
             current_cycle = cycles + 1
             print(f"  Cycle {current_cycle:02d}: ", end="", flush=True)
 
-            # 按顺序请求这一组中的每一个
+            # Request each in this group sequentially
             for key, url in URLS.items():
                 if await hit(session, url):
                     cycle_failed_at = key
@@ -64,7 +64,7 @@ async def main():
 
             print("-> ✅ OK")
             cycles += 1
-            # await asyncio.sleep(0.2)  # 模拟真实操作间隙
+            # await asyncio.sleep(0.2)  # Simulate real operation interval
 
         # --- Analysis ---
         print("\n" + "=" * 55)
@@ -72,8 +72,8 @@ async def main():
         print(f"  Min individual baseline: {min(baselines.values())} hits")
         print(f"  Total successful cycles: {cycles}")
 
-        # 核心逻辑判断
-        # 如果总循环次数 * 3 接近或等于单点最大阈值，说明是全局共享
+        # Core logic judgement
+        # If total cycles * 3 approaches or equals max single-endpoint threshold, indicates global sharing
         if cycle_failed_at:
             print(f"  Failed at: {cycle_failed_at}")
 

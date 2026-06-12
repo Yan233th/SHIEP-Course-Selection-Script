@@ -8,15 +8,10 @@ import re
 import warnings
 from urllib3.exceptions import InsecureRequestWarning
 
-try:
-    from aiohttp_socks import ProxyConnector
-except ImportError:
-    ProxyConnector = None
-
 from config import headers
-from custom import USE_PROXY, proxies, INQUIRY_USER_DATA, ENROLLMENT_DATA_API_PARAMS
+from custom import INQUIRY_USER_DATA, ENROLLMENT_DATA_API_PARAMS
 
-from utils import ensure_session_active
+from utils import ensure_session_active, build_connector
 
 warnings.simplefilter("ignore", InsecureRequestWarning)
 
@@ -195,7 +190,7 @@ def add_course_to_config(label: str, course_id: str, profile_id: str, courses: l
     }},\n"""
 
         # Insert the new config before the last bracket
-        # 这里不知道为什么最后多了个换行符，导致json格式错误
+        # For some reason an extra newline appears at the end, causing invalid JSON
         new_content = content[: last_bracket_pos - 1] + new_config + content[last_bracket_pos:]
 
     # Write back to custom.py
@@ -207,18 +202,7 @@ def add_course_to_config(label: str, course_id: str, profile_id: str, courses: l
 
 
 async def inquire_course_info():
-    connector = None
-    if USE_PROXY:
-        if ProxyConnector and "all" in proxies:
-            proxy_url_val = proxies["all"]
-            if proxy_url_val:
-                connector = ProxyConnector.from_url(proxy_url_val)
-            else:
-                print("Warning (Inquiry): USE_PROXY is True, but proxy URL is empty. No proxy.")
-        elif not ProxyConnector:
-            print("Warning (Inquiry): USE_PROXY is True, aiohttp-socks not installed. No proxy.")
-        else:
-            print("Warning (Inquiry): USE_PROXY is True, 'all' proxy key missing. No proxy.")
+    connector = build_connector("Inquiry")
 
     async with aiohttp.ClientSession(connector=connector) as session:
         # !important

@@ -3,12 +3,8 @@ import aiohttp
 from tqdm.asyncio import tqdm
 
 from inquire_course_info import get_enrollment_data
-from custom import USE_PROXY, proxies, USER_CONFIGS, INQUIRY_USER_DATA
-
-try:
-    from aiohttp_socks import ProxyConnector
-except ImportError:
-    ProxyConnector = None
+from custom import USER_CONFIGS, INQUIRY_USER_DATA
+from utils import build_connector
 
 
 class CourseStatus:
@@ -30,18 +26,7 @@ async def check(label: str, id: str, enrollments: dict):
 
 
 async def check_course():
-    connector = None
-    if USE_PROXY:
-        if ProxyConnector and "all" in proxies:
-            proxy_url_val = proxies["all"]
-            if proxy_url_val:
-                connector = ProxyConnector.from_url(proxy_url_val)
-            else:
-                print("Warning (Inquiry): USE_PROXY is True, but proxy URL is empty. No proxy.")
-        elif not ProxyConnector:
-            print("Warning (Inquiry): USE_PROXY is True, aiohttp-socks not installed. No proxy.")
-        else:
-            print("Warning (Inquiry): USE_PROXY is True, 'all' proxy key missing. No proxy.")
+    connector = build_connector("Check")
 
     async with aiohttp.ClientSession(connector=connector) as session:
         print("Fetching enrollment data...")

@@ -5,15 +5,10 @@ from collections import deque
 from tqdm.asyncio import tqdm
 from urllib3.exceptions import InsecureRequestWarning
 
-try:
-    from aiohttp_socks import ProxyConnector
-except ImportError:
-    ProxyConnector = None
-
 from config import url, headers, data as base_data_payload, failed_words, error_words
-from custom import USE_PROXY, proxies, USER_CONFIGS
+from custom import USER_CONFIGS
 
-from utils import ensure_session_active
+from utils import ensure_session_active, build_connector
 
 warnings.simplefilter("ignore", InsecureRequestWarning)
 
@@ -93,18 +88,7 @@ async def run_loop_for_single_user(user_config: dict):
     user_cookies = user_config.get("cookies")
     user_tables = user_config.get("tables")
 
-    connector = None
-    if USE_PROXY:
-        if ProxyConnector and "all" in proxies:
-            proxy_url_val = proxies["all"]
-            if proxy_url_val:
-                connector = ProxyConnector.from_url(proxy_url_val)
-            else:
-                print(f"Warning (User {user_label}): USE_PROXY is True, but proxy URL is empty. No proxy.")
-        elif not ProxyConnector:
-            print(f"Warning (User {user_label}): USE_PROXY is True, but aiohttp-socks not installed. No proxy.")
-        else:
-            print(f"Warning (User {user_label}): USE_PROXY is True, but 'all' proxy key missing. No proxy.")
+    connector = build_connector(f"User {user_label}")
 
     async with aiohttp.ClientSession(connector=connector) as session:
         # !important
