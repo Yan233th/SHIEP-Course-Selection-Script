@@ -226,7 +226,7 @@ async def inquire_course_info():
         inquiry_cookies = INQUIRY_USER_DATA.get("cookies")
 
         if not inquiry_cookies:
-            print("Error: Inquiry cookies not found in custom.py (INQUIRY_USER_DATA). Please configure them.")
+            print("Error: Inquiry cookies not found in config.toml (INQUIRY_USER_DATA). Please configure them.")
             return
 
         profile_ids: list = INQUIRY_USER_DATA.get("profileId")
@@ -306,6 +306,51 @@ async def inquire_course_info():
                     except Exception as e:
                         print(f"Error writing to file {file_path}: {str(e)}\n")
 
+                # Add course to config
+                add_choice = input("Do you want to add any course to config.toml? (y/n): ").strip().lower()
+                if add_choice == "y":
+                    from config_loader import add_course_to_config, list_user_configs
+
+                    # List available user configs
+                    users = list_user_configs()
+                    if not users:
+                        print("No user configurations found in config.toml")
+                        continue
+
+                    print("\nAvailable user configurations:")
+                    user_map = {}
+                    idx = 1
+                    for user in users:
+                        for table in user["tables"]:
+                            print(f"  [{idx}] {user['label']} - profileId: {table['profileId']}")
+                            user_map[idx] = (user['label'], table['profileId'])
+                            idx += 1
+
+                    # User selection
+                    try:
+                        choice_idx = int(input("Select user configuration [number]: ").strip())
+                        if choice_idx not in user_map:
+                            print("Invalid selection")
+                            continue
+
+                        selected_label, selected_profile_id = user_map[choice_idx]
+
+                        # Enter course ID
+                        course_id = input("Enter course ID to add: ").strip()
+
+                        # Verify course ID is in current query results
+                        if not any(str(c["id"]) == course_id for c in filtered):
+                            print(f"Error: Course ID {course_id} not found in current filtered results")
+                            continue
+
+                        # Add to config
+                        add_course_to_config(selected_label, selected_profile_id, course_id)
+
+                    except ValueError:
+                        print("Invalid input, skipping add operation")
+                    except KeyboardInterrupt:
+                        print("\nAdd operation cancelled")
+
             else:
                 print("No matching course found.")
         print("--- Course Inquiry Ended ---")
@@ -313,7 +358,7 @@ async def inquire_course_info():
 
 if __name__ == "__main__":
     print("--- Independently testing inquire_course_info.py ---")
-    print("Ensure INQUIRY_USER_DATA in custom.py is correctly set (cookies).")
+    print("Ensure INQUIRY_USER_DATA in config.toml is correctly set (cookies).")
     print("Ensure ENROLLMENT_DATA_API_PARAMS in config.py is correctly set.")
     try:
         asyncio.run(inquire_course_info())

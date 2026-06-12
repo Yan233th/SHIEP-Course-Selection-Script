@@ -8,4 +8,5 @@ dependencies = [
     "aiohttp-socks>=0.11.0",
     "tqdm>=4.67.1",
     "urllib3>=2.6.2",
+    "tomli-w>=1.1.0",
 ]
