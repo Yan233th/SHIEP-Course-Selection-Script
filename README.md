@@ -7,7 +7,7 @@ The system requires specific session activation sequences to prevent server-side
 
 ## Installation
 
-This project requires Python 3.10+ and uses `uv` for dependency management.
+This project requires Python 3.12+ and uses `uv` for dependency management.
 
 1. Install the environment and dependencies:
 ```bash
