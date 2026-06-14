@@ -309,15 +309,13 @@ async def inquire_course_info():
                 # Add course to config
                 add_choice = input("Do you want to add any course to config.toml? (y/n): ").strip().lower()
                 if add_choice == "y":
-                    from config_loader import add_course_to_config, list_user_configs
+                    from config_loader import add_course_to_config, list_user_configs, create_user_config
 
                     # List available user configs
                     users = list_user_configs()
-                    if not users:
-                        print("No user configurations found in config.toml")
-                        continue
 
                     print("\nAvailable user configurations:")
+                    print("  [0] Create new user")
                     user_map = {}
                     idx = 1
                     for user in users:
@@ -329,15 +327,47 @@ async def inquire_course_info():
                     # User selection
                     try:
                         choice_idx = int(input("Select user configuration [number]: ").strip())
-                        if choice_idx not in user_map:
+
+                        if choice_idx == 0:
+                            # Create new user
+                            print("\n--- Create New User ---")
+                            label = input("Enter user label (e.g., User_Alice): ").strip()
+                            if not label:
+                                print("Error: User label cannot be empty")
+                                continue
+
+                            profile_id = input("Enter profileId: ").strip()
+                            if not profile_id:
+                                print("Error: profileId cannot be empty")
+                                continue
+
+                            jsessionid = input("Enter JSESSIONID cookie: ").strip()
+                            if not jsessionid:
+                                print("Error: JSESSIONID cannot be empty")
+                                continue
+
+                            servername = input("Enter SERVERNAME cookie: ").strip()
+                            if not servername:
+                                print("Error: SERVERNAME cannot be empty")
+                                continue
+
+                            if not create_user_config(label, profile_id, jsessionid, servername):
+                                print("Failed to create user config")
+                                continue
+
+                            selected_label = label
+                            selected_profile_id = profile_id
+
+                        elif choice_idx in user_map:
+                            selected_label, selected_profile_id = user_map[choice_idx]
+
+                        else:
                             print("Invalid selection")
                             continue
 
-                        selected_label, selected_profile_id = user_map[choice_idx]
-
                         # Enter course ID(s) with retry loop
                         while True:
-                            course_ids_input = input("Enter course ID(s) to add (space/comma separated, or 'q' to cancel): ").strip()
+                            course_ids_input = input("\nEnter course ID(s) to add (space/comma separated, or 'q' to cancel): ").strip()
 
                             if course_ids_input.lower() == 'q':
                                 print("Add operation cancelled")
@@ -382,17 +412,15 @@ def add_courses_directly():
     Directly add known course IDs to config without querying.
     Use case: user already has course IDs from browser or previous query.
     """
-    from config_loader import list_user_configs, add_course_to_config
+    from config_loader import list_user_configs, add_course_to_config, create_user_config
 
     print("--- Add Courses to Config ---")
 
     # List available user configurations
     users = list_user_configs()
-    if not users:
-        print("Error: No user configurations found in config.toml")
-        return
 
     print("\nAvailable user configurations:")
+    print("  [0] Create new user")
     user_map = {}
     idx = 1
     for user in users:
@@ -401,15 +429,47 @@ def add_courses_directly():
             user_map[idx] = (user['label'], table['profileId'])
             idx += 1
 
-    # User selects target config
+    # User selects target config or creates new
     try:
         choice_idx = int(input("\nSelect user configuration [number]: ").strip())
-        if choice_idx not in user_map:
+
+        if choice_idx == 0:
+            # Create new user
+            print("\n--- Create New User ---")
+            label = input("Enter user label (e.g., User_Alice): ").strip()
+            if not label:
+                print("Error: User label cannot be empty")
+                return
+
+            profile_id = input("Enter profileId: ").strip()
+            if not profile_id:
+                print("Error: profileId cannot be empty")
+                return
+
+            jsessionid = input("Enter JSESSIONID cookie: ").strip()
+            if not jsessionid:
+                print("Error: JSESSIONID cannot be empty")
+                return
+
+            servername = input("Enter SERVERNAME cookie: ").strip()
+            if not servername:
+                print("Error: SERVERNAME cannot be empty")
+                return
+
+            if not create_user_config(label, profile_id, jsessionid, servername):
+                print("Failed to create user config")
+                return
+
+            selected_label = label
+            selected_profile_id = profile_id
+
+        elif choice_idx in user_map:
+            selected_label, selected_profile_id = user_map[choice_idx]
+            print(f"Selected: {selected_label} - profileId: {selected_profile_id}")
+
+        else:
             print("Invalid selection")
             return
-
-        selected_label, selected_profile_id = user_map[choice_idx]
-        print(f"Selected: {selected_label} - profileId: {selected_profile_id}")
 
         # Enter course IDs with retry loop
         while True:

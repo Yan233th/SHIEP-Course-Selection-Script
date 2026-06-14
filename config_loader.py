@@ -139,3 +139,73 @@ def list_user_configs() -> list[dict]:
         }
         for user in user_configs
     ]
+
+
+def create_user_config(label: str, profile_id: str, jsessionid: str, servername: str) -> bool:
+    """
+    Create a new user configuration and write to config.toml.
+
+    Args:
+        label: User label (e.g., "User_Alice")
+        profile_id: Course table ID
+        jsessionid: JSESSIONID cookie value
+        servername: SERVERNAME cookie value
+
+    Returns:
+        True if created successfully, False otherwise
+    """
+    try:
+        import tomli_w
+    except ImportError:
+        print("Error: tomli_w not installed. Run: uv sync")
+        return False
+
+    config_path = Path("config.toml")
+    if not config_path.exists():
+        print("Error: config.toml not found.")
+        return False
+
+    # Read current config
+    try:
+        with open(config_path, "rb") as f:
+            config_data = tomllib.load(f)
+    except Exception as e:
+        print(f"Error reading config.toml: {e}")
+        return False
+
+    # Check if user label already exists
+    for user in config_data.get("USER_CONFIGS", []):
+        if user.get("label") == label:
+            print(f"Error: User '{label}' already exists in config.toml")
+            return False
+
+    # Create new user config
+    new_user = {
+        "label": label,
+        "tables": [
+            {
+                "profileId": profile_id,
+                "course_ids": []
+            }
+        ],
+        "cookies": {
+            "JSESSIONID": jsessionid,
+            "SERVERNAME": servername
+        }
+    }
+
+    # Add to USER_CONFIGS
+    if "USER_CONFIGS" not in config_data:
+        config_data["USER_CONFIGS"] = []
+    config_data["USER_CONFIGS"].append(new_user)
+
+    # Write back to TOML
+    try:
+        with open(config_path, "wb") as f:
+            tomli_w.dump(config_data, f)
+        print(f"✓ Successfully created user '{label}' with profileId '{profile_id}'")
+        return True
+    except Exception as e:
+        print(f"Error writing config.toml: {e}")
+        return False
+
