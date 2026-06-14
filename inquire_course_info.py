@@ -335,16 +335,37 @@ async def inquire_course_info():
 
                         selected_label, selected_profile_id = user_map[choice_idx]
 
-                        # Enter course ID
-                        course_id = input("Enter course ID to add: ").strip()
+                        # Enter course ID(s) with retry loop
+                        while True:
+                            course_ids_input = input("Enter course ID(s) to add (space/comma separated, or 'q' to cancel): ").strip()
 
-                        # Verify course ID is in current query results
-                        if not any(str(c["id"]) == course_id for c in filtered):
-                            print(f"Error: Course ID {course_id} not found in current filtered results")
-                            continue
+                            if course_ids_input.lower() == 'q':
+                                print("Add operation cancelled")
+                                break
 
-                        # Add to config
-                        add_course_to_config(selected_label, selected_profile_id, course_id)
+                            # Parse multiple IDs (support space and comma separation)
+                            course_ids = [cid.strip() for cid in course_ids_input.replace(',', ' ').split() if cid.strip()]
+
+                            if not course_ids:
+                                print("No course ID entered, please try again")
+                                continue
+
+                            # Verify all IDs are in current query results
+                            invalid_ids = [cid for cid in course_ids if not any(str(c["id"]) == cid for c in filtered)]
+
+                            if invalid_ids:
+                                print(f"Error: Course ID(s) not found in current results: {', '.join(invalid_ids)}")
+                                print("Please re-enter valid ID(s)")
+                                continue  # Retry input
+
+                            # All valid, add one by one
+                            success_count = 0
+                            for cid in course_ids:
+                                if add_course_to_config(selected_label, selected_profile_id, cid):
+                                    success_count += 1
+
+                            print(f"✓ Successfully added {success_count}/{len(course_ids)} course(s)")
+                            break  # Exit retry loop
 
                     except ValueError:
                         print("Invalid input, skipping add operation")
