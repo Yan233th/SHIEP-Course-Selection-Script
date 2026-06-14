@@ -12,40 +12,38 @@ all = "socks5://127.0.0.1:114514"
 [[USER_CONFIGS]]
 label = "User_Alice"
 
-  # Table 1
-  [[USER_CONFIGS.tables]]
-  profileId = "114514"
-  course_ids = [
-    "COURSEID_A1",
-    "COURSEID_A2",
-  ]
+[[USER_CONFIGS.tables]]
+profileId = "114514"
+course_ids = [
+  "COURSEID_A1",
+  "COURSEID_A2",
+]
 
-  # Table 2
-  [[USER_CONFIGS.tables]]
-  profileId = "1919810"
-  course_ids = [
-    "COURSEID_B1",
-    "COURSEID_B2",
-  ]
+[[USER_CONFIGS.tables]]
+profileId = "1919810"
+course_ids = [
+  "COURSEID_B1",
+  "COURSEID_B2",
+]
 
-  [USER_CONFIGS.cookies]
-  JSESSIONID = "ALICE_SESSION_ID_HERE"
-  SERVERNAME = "c1"
+[USER_CONFIGS.cookies]
+JSESSIONID = "ALICE_SESSION_ID_HERE"
+SERVERNAME = "c1"
 
 # -------------------- User: Bob --------------------
 [[USER_CONFIGS]]
 label = "User_Bob"
 
-  [[USER_CONFIGS.tables]]
-  profileId = "233"
-  course_ids = [
-    "COURSEID_C1",
-    "COURSEID_C2",
-  ]
+[[USER_CONFIGS.tables]]
+profileId = "233"
+course_ids = [
+  "COURSEID_C1",
+  "COURSEID_C2",
+]
 
-  [USER_CONFIGS.cookies]
-  JSESSIONID = "BOB_SESSION_ID_HERE"
-  SERVERNAME = "c2"
+[USER_CONFIGS.cookies]
+JSESSIONID = "BOB_SESSION_ID_HERE"
+SERVERNAME = "c2"
 
 # ============================================================
 # Inquiry Configuration
@@ -55,9 +53,9 @@ label = "User_Bob"
 label = "DefaultInquiryUser"
 profileId = ["114", "514", "1919", "810"]
 
-  [INQUIRY_USER_DATA.cookies]
-  JSESSIONID = "YOUR_INQUIRY_JSESSIONID_HERE"
-  SERVERNAME = "YOUR_INQUIRY_SERVERNAME_HERE"
+[INQUIRY_USER_DATA.cookies]
+JSESSIONID = "YOUR_INQUIRY_JSESSIONID_HERE"
+SERVERNAME = "YOUR_INQUIRY_SERVERNAME_HERE"
 
 # ============================================================
 # API Parameters
