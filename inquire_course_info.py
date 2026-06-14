@@ -329,31 +329,53 @@ async def inquire_course_info():
                         choice_idx = int(input("Select user configuration [number]: ").strip())
 
                         if choice_idx == 0:
-                            # Create new user
-                            print("\n--- Create New User ---")
+                            # Create new user or add table to existing user
+                            print("\n--- Create New User / Add Table ---")
                             label = input("Enter user label (e.g., User_Alice): ").strip()
                             if not label:
                                 print("Error: User label cannot be empty")
                                 continue
+
+                            # Check if user already exists
+                            try:
+                                import tomllib
+                                from pathlib import Path
+                                config_path = Path("config.toml")
+                                if config_path.exists():
+                                    with open(config_path, "rb") as f:
+                                        config_data = tomllib.load(f)
+                                    user_exists = any(u.get("label") == label for u in config_data.get("USER_CONFIGS", []))
+                                else:
+                                    user_exists = False
+                            except Exception:
+                                user_exists = False
 
                             profile_id = input("Enter profileId: ").strip()
                             if not profile_id:
                                 print("Error: profileId cannot be empty")
                                 continue
 
-                            jsessionid = input("Enter JSESSIONID cookie: ").strip()
-                            if not jsessionid:
-                                print("Error: JSESSIONID cannot be empty")
-                                continue
+                            if user_exists:
+                                # User exists, add new table (no need for cookies)
+                                print(f"User '{label}' exists, adding new table (using existing cookies)...")
+                                if not create_user_config(label, profile_id, "", ""):
+                                    print("Failed to add table")
+                                    continue
+                            else:
+                                # New user, need cookies
+                                jsessionid = input("Enter JSESSIONID cookie: ").strip()
+                                if not jsessionid:
+                                    print("Error: JSESSIONID cannot be empty")
+                                    continue
 
-                            servername = input("Enter SERVERNAME cookie: ").strip()
-                            if not servername:
-                                print("Error: SERVERNAME cannot be empty")
-                                continue
+                                servername = input("Enter SERVERNAME cookie: ").strip()
+                                if not servername:
+                                    print("Error: SERVERNAME cannot be empty")
+                                    continue
 
-                            if not create_user_config(label, profile_id, jsessionid, servername):
-                                print("Failed to create user config")
-                                continue
+                                if not create_user_config(label, profile_id, jsessionid, servername):
+                                    print("Failed to create user config")
+                                    continue
 
                             selected_label = label
                             selected_profile_id = profile_id

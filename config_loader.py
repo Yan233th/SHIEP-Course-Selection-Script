@@ -253,31 +253,49 @@ def add_courses_directly():
         choice_idx = int(input("\nSelect user configuration [number]: ").strip())
 
         if choice_idx == 0:
-            # Create new user
-            print("\n--- Create New User ---")
+            # Create new user or add table to existing user
+            print("\n--- Create New User / Add Table ---")
             label = input("Enter user label (e.g., User_Alice): ").strip()
             if not label:
                 print("Error: User label cannot be empty")
                 return
+
+            # Check if user already exists
+            import tomllib
+            config_path = Path("config.toml")
+            if config_path.exists():
+                with open(config_path, "rb") as f:
+                    config_data = tomllib.load(f)
+                user_exists = any(u.get("label") == label for u in config_data.get("USER_CONFIGS", []))
+            else:
+                user_exists = False
 
             profile_id = input("Enter profileId: ").strip()
             if not profile_id:
                 print("Error: profileId cannot be empty")
                 return
 
-            jsessionid = input("Enter JSESSIONID cookie: ").strip()
-            if not jsessionid:
-                print("Error: JSESSIONID cannot be empty")
-                return
+            if user_exists:
+                # User exists, add new table (no need for cookies)
+                print(f"User '{label}' exists, adding new table (using existing cookies)...")
+                if not create_user_config(label, profile_id, "", ""):
+                    print("Failed to add table")
+                    return
+            else:
+                # New user, need cookies
+                jsessionid = input("Enter JSESSIONID cookie: ").strip()
+                if not jsessionid:
+                    print("Error: JSESSIONID cannot be empty")
+                    return
 
-            servername = input("Enter SERVERNAME cookie: ").strip()
-            if not servername:
-                print("Error: SERVERNAME cannot be empty")
-                return
+                servername = input("Enter SERVERNAME cookie: ").strip()
+                if not servername:
+                    print("Error: SERVERNAME cannot be empty")
+                    return
 
-            if not create_user_config(label, profile_id, jsessionid, servername):
-                print("Failed to create user config")
-                return
+                if not create_user_config(label, profile_id, jsessionid, servername):
+                    print("Failed to create user config")
+                    return
 
             selected_label = label
             selected_profile_id = profile_id
