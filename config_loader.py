@@ -124,11 +124,14 @@ def add_course_to_config(label: str, profile_id: str, course_id: str) -> bool:
 def list_user_configs() -> list[dict]:
     """
     List all users and their tables in USER_CONFIGS for interactive selection.
+    Re-reads config.toml each time to reflect latest changes.
 
     Returns:
         [{"label": "User_Alice", "tables": [{"profileId": "114514"}, ...]}, ...]
     """
-    user_configs = config.get("USER_CONFIGS", [])
+    # Re-read config to get latest data (important for interactive sessions)
+    fresh_config = load_config()
+    user_configs = fresh_config.get("USER_CONFIGS", [])
     return [
         {
             "label": user.get("label", "Unknown"),
