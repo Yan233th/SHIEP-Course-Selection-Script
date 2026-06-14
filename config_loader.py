@@ -143,7 +143,10 @@ def list_user_configs() -> list[dict]:
 
 def create_user_config(label: str, profile_id: str, jsessionid: str, servername: str) -> bool:
     """
-    Create a new user configuration and write to config.toml.
+    Create a new user configuration or add a new table to existing user.
+
+    If user label does not exist: create new user with one table
+    If user label exists: add new table to that user (reuse existing cookies)
 
     Args:
         label: User label (e.g., "User_Alice")
@@ -152,7 +155,7 @@ def create_user_config(label: str, profile_id: str, jsessionid: str, servername:
         servername: SERVERNAME cookie value
 
     Returns:
-        True if created successfully, False otherwise
+        True if created/added successfully, False otherwise
     """
     try:
         import tomli_w
@@ -174,36 +177,51 @@ def create_user_config(label: str, profile_id: str, jsessionid: str, servername:
         return False
 
     # Check if user label already exists
+    existing_user = None
     for user in config_data.get("USER_CONFIGS", []):
         if user.get("label") == label:
-            print(f"Error: User '{label}' already exists in config.toml")
-            return False
+            existing_user = user
+            break
 
-    # Create new user config
-    new_user = {
-        "label": label,
-        "tables": [
-            {
-                "profileId": profile_id,
-                "course_ids": []
-            }
-        ],
-        "cookies": {
-            "JSESSIONID": jsessionid,
-            "SERVERNAME": servername
+    if existing_user:
+        # User exists: check if profileId already exists
+        for table in existing_user.get("tables", []):
+            if str(table.get("profileId")) == str(profile_id):
+                print(f"Error: Table with profileId '{profile_id}' already exists for user '{label}'")
+                return False
+
+        # Add new table to existing user
+        new_table = {
+            "profileId": profile_id,
+            "course_ids": []
         }
-    }
+        existing_user.setdefault("tables", []).append(new_table)
+        print(f"✓ Successfully added table '{profile_id}' to existing user '{label}'")
+    else:
+        # Create new user
+        new_user = {
+            "label": label,
+            "tables": [
+                {
+                    "profileId": profile_id,
+                    "course_ids": []
+                }
+            ],
+            "cookies": {
+                "JSESSIONID": jsessionid,
+                "SERVERNAME": servername
+            }
+        }
 
-    # Add to USER_CONFIGS
-    if "USER_CONFIGS" not in config_data:
-        config_data["USER_CONFIGS"] = []
-    config_data["USER_CONFIGS"].append(new_user)
+        if "USER_CONFIGS" not in config_data:
+            config_data["USER_CONFIGS"] = []
+        config_data["USER_CONFIGS"].append(new_user)
+        print(f"✓ Successfully created user '{label}' with profileId '{profile_id}'")
 
     # Write back to TOML
     try:
         with open(config_path, "wb") as f:
             tomli_w.dump(config_data, f)
-        print(f"✓ Successfully created user '{label}' with profileId '{profile_id}'")
         return True
     except Exception as e:
         print(f"Error writing config.toml: {e}")
