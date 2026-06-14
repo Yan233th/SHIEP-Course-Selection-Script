@@ -2,9 +2,10 @@ import sys
 import asyncio
 
 from main_select_courses import main_select_courses
-from inquire_course_info import inquire_course_info, add_courses_directly
+from inquire_course_info import inquire_course_info
 from verify_cookie_validity import verify_cookie_validity
 from check_course import check_course
+from config_loader import add_courses_directly
 
 
 def display_help():
