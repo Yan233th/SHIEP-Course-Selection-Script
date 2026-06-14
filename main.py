@@ -2,7 +2,7 @@ import sys
 import asyncio
 
 from main_select_courses import main_select_courses
-from inquire_course_info import inquire_course_info
+from inquire_course_info import inquire_course_info, add_courses_directly
 from verify_cookie_validity import verify_cookie_validity
 from check_course import check_course
 
@@ -16,6 +16,7 @@ def display_help():
     print("  --start    : Select courses for all users")
     print("               [--endless] Retry indefinitely until successful")
     print("  --inquire  : Inquire course info")
+    print("  --add      : Add known course IDs to config")
     print("  --validate : Batch validate cookie validity")
     print("  --check    : Verify course availability")
     print("  --help     : Show this help message and exit")
@@ -37,6 +38,8 @@ async def main():
                 await main_select_courses()
         case "--inquire":
             await inquire_course_info()
+        case "--add":
+            add_courses_directly()
         case "--validate":
             await verify_cookie_validity()
         case "--check":

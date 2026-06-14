@@ -377,6 +377,72 @@ async def inquire_course_info():
         print("--- Course Inquiry Ended ---")
 
 
+def add_courses_directly():
+    """
+    Directly add known course IDs to config without querying.
+    Use case: user already has course IDs from browser or previous query.
+    """
+    from config_loader import list_user_configs, add_course_to_config
+
+    print("--- Add Courses to Config ---")
+
+    # List available user configurations
+    users = list_user_configs()
+    if not users:
+        print("Error: No user configurations found in config.toml")
+        return
+
+    print("\nAvailable user configurations:")
+    user_map = {}
+    idx = 1
+    for user in users:
+        for table in user["tables"]:
+            print(f"  [{idx}] {user['label']} - profileId: {table['profileId']}")
+            user_map[idx] = (user['label'], table['profileId'])
+            idx += 1
+
+    # User selects target config
+    try:
+        choice_idx = int(input("\nSelect user configuration [number]: ").strip())
+        if choice_idx not in user_map:
+            print("Invalid selection")
+            return
+
+        selected_label, selected_profile_id = user_map[choice_idx]
+        print(f"Selected: {selected_label} - profileId: {selected_profile_id}")
+
+        # Enter course IDs with retry loop
+        while True:
+            course_ids_input = input("\nEnter course ID(s) to add (space/comma separated, or 'q' to cancel): ").strip()
+
+            if course_ids_input.lower() == 'q':
+                print("Add operation cancelled")
+                return
+
+            # Parse multiple IDs (support space and comma separation)
+            course_ids = [cid.strip() for cid in course_ids_input.replace(',', ' ').split() if cid.strip()]
+
+            if not course_ids:
+                print("No course ID entered, please try again")
+                continue
+
+            # Add one by one (no validation, trust user input)
+            success_count = 0
+            for cid in course_ids:
+                if add_course_to_config(selected_label, selected_profile_id, cid):
+                    success_count += 1
+
+            print(f"✓ Successfully added {success_count}/{len(course_ids)} course(s)")
+            break  # Exit retry loop
+
+    except ValueError:
+        print("Invalid input")
+    except KeyboardInterrupt:
+        print("\nAdd operation cancelled")
+
+    print("--- Add Courses Ended ---")
+
+
 if __name__ == "__main__":
     print("--- Independently testing inquire_course_info.py ---")
     print("Ensure INQUIRY_USER_DATA in config.toml is correctly set (cookies).")
